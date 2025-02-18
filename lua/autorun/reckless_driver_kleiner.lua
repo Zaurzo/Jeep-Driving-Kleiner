@@ -49,6 +49,9 @@ do
     end)
 
     if SERVER then
+        local isInvulnerable = CreateConVar('sv_kleiner_jeep_invulnerable', '0', FCVAR_ARCHIVE)
+        local hasVoice = CreateConVar('sv_kleiner_jeep_voice', '1', FCVAR_ARCHIVE)
+
         hook.Add('CanPlayerEnterVehicle', 'reckless_kleiner_jeep_control', function(ply, veh)
             if veh.ownedByRecklessDriverKleiner and IsValid(veh.driver) then
                 return false
@@ -82,6 +85,8 @@ do
         end)
 
         hook.Add('EntityTakeDamage', 'reckless_kleiner_damage_control', function(ent, dmginfo)
+            if isInvulnerable:GetBool() then return end
+
             local attacker = dmginfo:GetAttacker()
             local dmg = dmginfo:GetDamage()
 
@@ -135,6 +140,7 @@ do
         local vector_up = vector_up
 
         function ENT:RandomVoiceLine(name, min, max, delay)
+            if not hasVoice:GetBool() then return end
             if not IsValid(self.driver) then return end
 
             if delay then
@@ -340,6 +346,16 @@ do
     else
         function ENT:Draw() 
         end
+
+        hook.Add('AddToolMenuTabs', 'Zaurzo.ComedicTab.Kleiner', function()
+            spawnmenu.AddToolCategory('Utilities', 'zaurzoComedic', 'Zaurzo - Comedic')
+        
+            spawnmenu.AddToolMenuOption('Utilities', 'zaurzoComedic', 'Zaurzo - Comedic', 'Kleiner Riding Jeep', '', '', function(panel)
+                panel:Help('dr. isaac kleiner from hl2 recklessly driving a jeep')
+                panel:CheckBox('Invulnerability Enabled', 'sv_kleiner_jeep_invulnerable')
+                panel:CheckBox('Voice Enabled', 'sv_kleiner_jeep_voice')
+            end)
+        end)
     end
 
     scripted_ents.Register(ENT, classname)
